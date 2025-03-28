@@ -13,6 +13,7 @@ import (
 
 	"github.com/SencilloDev/nopa"
 	"github.com/nats-io/jsm.go/natscontext"
+	"github.com/nats-io/nats.go/jetstream"
 	"github.com/nats-io/nats.go/micro"
 )
 
@@ -52,18 +53,19 @@ func HandleRequest(r micro.Request) {
 }
 
 func main() {
+	ctx := context.Background()
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	nc, err := natscontext.Connect("")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	js, err := nc.JetStream()
+	js, err := jetstream.New(nc)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	obj, err := js.ObjectStore("bundles")
+	obj, err := js.ObjectStore(ctx, "bundles")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -93,7 +95,7 @@ func main() {
 	svc.AddEndpoint("test", micro.HandlerFunc(HandleRequest), micro.WithEndpointSubject("test"))
 	logger.Info("started service")
 
-	go agent.MustWatchBundleUpdates()
+	go agent.MustWatchBundleUpdates(ctx)
 
 	sigTerm := make(chan os.Signal, 1)
 	signal.Notify(sigTerm, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
