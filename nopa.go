@@ -22,13 +22,13 @@ import (
 	"sync"
 
 	"github.com/nats-io/nats.go"
-	"github.com/open-policy-agent/opa/ast"
-	"github.com/open-policy-agent/opa/bundle"
-	"github.com/open-policy-agent/opa/metrics"
-	"github.com/open-policy-agent/opa/rego"
-	"github.com/open-policy-agent/opa/storage"
-	"github.com/open-policy-agent/opa/storage/inmem"
-	"github.com/open-policy-agent/opa/topdown/cache"
+	"github.com/open-policy-agent/opa/v1/ast"
+	"github.com/open-policy-agent/opa/v1/bundle"
+	"github.com/open-policy-agent/opa/v1/metrics"
+	"github.com/open-policy-agent/opa/v1/rego"
+	"github.com/open-policy-agent/opa/v1/storage"
+	"github.com/open-policy-agent/opa/v1/storage/inmem"
+	"github.com/open-policy-agent/opa/v1/topdown/cache"
 )
 
 var (
@@ -275,8 +275,8 @@ func (a *Agent) Activate(ctx context.Context, b bundle.Bundle) error {
 	return a.OPAStore.Commit(ctx, txn)
 }
 
-func readInputGetV1(data []byte) (ast.Value, *interface{}, error) {
-	var input interface{}
+func readInputGetV1(data []byte) (ast.Value, *any, error) {
+	var input any
 	if err := json.Unmarshal(data, &input); err != nil {
 		return nil, nil, fmt.Errorf("invalid input: %w", err)
 	}
