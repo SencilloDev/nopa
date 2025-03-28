@@ -21,7 +21,7 @@ import (
 	"log/slog"
 	"sync"
 
-	"github.com/nats-io/nats.go"
+	"github.com/nats-io/nats.go/jetstream"
 	"github.com/open-policy-agent/opa/v1/ast"
 	"github.com/open-policy-agent/opa/v1/bundle"
 	"github.com/open-policy-agent/opa/v1/metrics"
@@ -41,7 +41,7 @@ type BundleModifyFunc func(b bundle.Bundle) (bundle.Bundle, error)
 
 type Agent struct {
 	BundleName  string
-	ObjectStore nats.ObjectStore
+	ObjectStore jetstream.ObjectStore
 	OPAStore    storage.Store
 	mutex       sync.RWMutex
 	Logger      *slog.Logger
@@ -54,7 +54,7 @@ type Agent struct {
 
 type AgentOpts struct {
 	BundleName  string
-	ObjectStore nats.ObjectStore
+	ObjectStore jetstream.ObjectStore
 	Logger      *slog.Logger
 	Env         map[string]string
 	Modifiers   []BundleModifyFunc
@@ -105,7 +105,7 @@ func (a *Agent) SetBundle(name string) error {
 	}()
 
 	// get bundle from NATS object bucket
-	f, err := a.ObjectStore.Get(name)
+	f, err := a.ObjectStore.Get(ctx, name)
 	if err != nil {
 		return fmt.Errorf("error getting object %v", err)
 	}
@@ -135,8 +135,8 @@ func (a *Agent) SetBundle(name string) error {
 	return nil
 }
 
-func (a *Agent) WatchBundleUpdates(errChan chan<- error) {
-	watcher, err := a.ObjectStore.Watch(nats.IgnoreDeletes())
+func (a *Agent) WatchBundleUpdates(ctx context.Context, errChan chan<- error) {
+	watcher, err := a.ObjectStore.Watch(ctx, jetstream.IgnoreDeletes())
 	if err != nil {
 		a.Logger.Error(err.Error())
 	}
@@ -158,8 +158,8 @@ func (a *Agent) WatchBundleUpdates(errChan chan<- error) {
 	}
 }
 
-func (a *Agent) MustWatchBundleUpdates() {
-	watcher, err := a.ObjectStore.Watch(nats.IgnoreDeletes())
+func (a *Agent) MustWatchBundleUpdates(ctx context.Context) {
+	watcher, err := a.ObjectStore.Watch(ctx, jetstream.IgnoreDeletes())
 	if err != nil {
 		a.Logger.Error(err.Error())
 	}
