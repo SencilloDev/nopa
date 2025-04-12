@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"log/slog"
 	"sync"
+	"time"
 
 	"github.com/nats-io/nats.go/jetstream"
 	"github.com/open-policy-agent/opa/v1/ast"
@@ -90,7 +91,8 @@ func (a *Agent) SetRuntime() {
 
 // SetBundle updates the in-memory store with the bundle retrieved from the NATS object store
 func (a *Agent) SetBundle(name string) error {
-	ctx := context.Background()
+	ctxT, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	a.Logger.Info("locking requests to update bundle")
 	a.mutex.Lock()
 	a.Logger.Info("locked successfully")
@@ -101,7 +103,7 @@ func (a *Agent) SetBundle(name string) error {
 	}()
 
 	// get bundle from NATS object bucket
-	f, err := a.ObjectStore.Get(ctx, name)
+	f, err := a.ObjectStore.Get(ctxT, name)
 	if err != nil {
 		return fmt.Errorf("error getting object %v", err)
 	}
@@ -123,7 +125,7 @@ func (a *Agent) SetBundle(name string) error {
 		}
 	}
 
-	if err := a.Activate(ctx, b); err != nil {
+	if err := a.Activate(ctxT, b); err != nil {
 		return err
 	}
 	a.Logger.Info("activated bundle successfully")
