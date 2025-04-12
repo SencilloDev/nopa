@@ -196,6 +196,7 @@ func (a *Agent) Eval(ctx context.Context, input []byte, pkg string) ([]byte, err
 	}
 
 	a.mutex.RLock()
+	defer a.mutex.RUnlock()
 	c := storage.NewContext()
 	txn, err := a.OPAStore.NewTransaction(ctx, storage.TransactionParams{Context: c})
 	if err != nil {
@@ -234,7 +235,6 @@ func (a *Agent) Eval(ctx context.Context, input []byte, pkg string) ([]byte, err
 		return nil, ErrNotFound
 	}
 
-	a.mutex.RUnlock()
 	value, err := json.Marshal(results[0].Expressions[0].Value)
 	if err != nil {
 		return nil, err
