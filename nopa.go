@@ -92,11 +92,7 @@ func (a *Agent) SetRuntime() {
 func (a *Agent) SetBundle(name string) error {
 	ctx := context.Background()
 	a.Logger.Info("locking requests to update bundle")
-	ok := a.mutex.TryLock()
-	if !ok {
-		a.mutex.Unlock()
-		a.mutex.Lock()
-	}
+	a.mutex.Lock()
 	a.Logger.Info("locked successfully")
 	defer func() {
 		a.Logger.Info("unlocking requests")
