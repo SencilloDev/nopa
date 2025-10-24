@@ -187,6 +187,7 @@ func (a *Agent) Eval(ctx context.Context, input []byte, pkg string) ([]byte, err
 		return nil, fmt.Errorf("package name required")
 	}
 
+	start := time.Now()
 	a.Logger.Info(fmt.Sprintf("evaluating package: %s", pkg))
 	a.Logger.Debug(fmt.Sprintf("parsing input: %v", string(input)))
 	data, _, err := readInputGetV1(input)
@@ -240,6 +241,7 @@ func (a *Agent) Eval(ctx context.Context, input []byte, pkg string) ([]byte, err
 		return nil, err
 	}
 
+	a.Logger.Info("evaluation", "duration", fmt.Sprintf("%d ms", time.Since(start).Milliseconds()))
 	a.Logger.Debug(fmt.Sprintf("response: %s", string(value)))
 
 	return value, nil
