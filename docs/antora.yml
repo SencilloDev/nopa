@@ -1,5 +1,5 @@
-name: platform
-title: Platform
+name: nopa
+title: NOPA
 version: main
 nav:
 - modules/ROOT/nav.adoc
